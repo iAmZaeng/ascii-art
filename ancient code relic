@@ -1,0 +1,62 @@
+package main
+
+import (
+	"fmt"
+	"log"
+	"os"
+	"strings"
+)
+
+func main() {
+	args := os.Args[1:]
+	if len(args) != 1 {
+		log.Fatal("just one input is needed")
+	}
+	asciigrphic := Ascii(args[0])
+	fmt.Print(asciigrphic)
+}
+func Ascii(argument string) string {
+	if argument == "" {
+		return ""
+	}
+	var result string
+	var line string
+	patternContent := ReadFile("standard.txt")
+	patternLines := strings.Split(patternContent, "\n")
+	separatedInput := strings.Split(argument, "\n")
+	newLineFlag := IsWholeNewLine(separatedInput)
+	for _, str := range separatedInput {
+		if str == "" {
+			if !newLineFlag { // newLineFlag == false
+				result += "\n"
+			}
+			newLineFlag = false
+			continue
+		}
+		for i := 1; i <= 8; i++ {
+			line = ""
+			for _, char := range str {
+				indexInPattern := ((int(char) - 32) * 9) + i
+				line += patternLines[indexInPattern]
+			}
+			line += "\n"
+			result += line
+		}
+	}
+	return result
+}
+func ReadFile(fileName string) string {
+	data, err := os.ReadFile(fileName)
+	if err != nil {
+		log.Fatal("\n", err)
+	}
+	return string(data)
+}
+func IsWholeNewLine(input []string) bool {
+	for _, str := range input {
+		if str != "" {
+			return false
+		}
+	}
+	return true
+}
