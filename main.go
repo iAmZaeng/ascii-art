@@ -3,62 +3,93 @@ package main
 import (
 	"fmt"
 	"os"
-	"strings"
 )
 
 func main() {
-
-	args := os.Args[1:]
-	if len(args) != 1 {
-		fmt.Println("you need just one input")
+	if len(os.Args) != 2 {
 		return
 	}
-	Ascii(args[0])
-}
 
-/* Ascii(args[0]) */
+	input := os.Args[1]
 
-func Ascii(word string) string {
-
-	if word == "" {
-		return ""
-	}
-
+	// Read the banner file
 	data, err := os.ReadFile("standard.txt")
 	if err != nil {
-		fmt.Println("File read error", err)
-		return word
-	} // checking file reading
+		fmt.Println("Error:", err)
+		return
+	}
 
-	content := string(data)
-	lines := strings.Split(content, "\n")
-	// transforming and splitting the text to the strings
-	// all the strings are in the "lines" now
+	banner := string(data)
 
-	// somehow i need to connect ascii symbols with file line by line
-	/* char := 'B'
-	   index := int(char) - 32 */
+	// Turn the \n from the command into real newlines
+	input = convertNewLines(input)
 
-	for i := 0; i < 8; i++ {
-		row := "" // making the horizontal output line
+	// Print the input
+	printAscii(input, banner)
+}
 
-		for _, char := range row {
+func convertNewLines(input string) string {
+	result := ""
 
-			// adding those spaaaces
-			if char == ' ' {
-				row += "      "
-				continue
-			}
+	for i := 0; i < len(input); i++ {
+		if input[i] == '\\' && i+1 < len(input) && input[i+1] == 'n' {
+			result += "\n"
+			i++
+		} else {
+			result += string(input[i])
+		}
+	}
 
-			index := int(char) - 33
+	return result
+}
 
-			line := index*9 + 1 + i // number of the line in file
-			row += lines[line]      // taking out one line from the file from its number
-			// useful stuff: row += is row = row + ...
+func printAscii(input string, banner string) {
+	bannerLines := splitLines(banner)
+	inputLines := splitLines(input)
 
+	for _, line := range inputLines {
+
+		// An empty line means print one empty line
+		if line == "" {
+			fmt.Println()
+			continue
 		}
 
-		fmt.Println(row)
+		// Print the 8 rows of the ASCII characters
+		for row := 0; row < 8; row++ {
+
+			for i := 0; i < len(line); i++ {
+				char := line[i]
+
+				// ASCII characters start at 32 (space)
+				charNumber := int(char) - 32
+
+				// Each character takes 9 lines
+				start := charNumber * 9 + 1
+
+				fmt.Print(bannerLines[start+row])
+			}
+
+			fmt.Println()
+		}
+
 	}
-	return word
+}
+
+func splitLines(text string) []string {
+	lines := []string{}
+	current := ""
+
+	for i := 0; i < len(text); i++ {
+		if text[i] == '\n' {
+			lines = append(lines, current)
+			current = ""
+		} else {
+			current += string(text[i])
+		}
+	}
+
+	lines = append(lines, current)
+
+	return lines
 }
